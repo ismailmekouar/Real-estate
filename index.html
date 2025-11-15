@@ -2,12 +2,21 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Jeu Immobilier Casablanca</title>
+  <title>🏢 Jeu Immobilier Casablanca — Master Edition</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+
+<header>
+  <h1>🏙️ Jeu Immobilier Casablanca — Pro Simulation</h1>
+  <div class="header-actions">
+    <button id="newGameBtn">🆕 Nouvelle Partie</button>
+    <button id="loadGameBtn">💾 Charger Partie</button>
+    <button id="saveGameBtn">💾 Sauvegarder Partie</button>
+  </div>
+</header>
 
 <main>
   <!-- Carte Leaflet -->
@@ -15,67 +24,91 @@
 
   <!-- Sidebar -->
   <aside id="sidebar">
+
     <!-- Tableau de bord -->
-    <div class="panel">
-      <h2>Tableau de bord</h2>
+    <div class="panel dashboard">
+      <h2>📊 Tableau de bord</h2>
       <div class="stat">Mois : <span id="month">0</span></div>
-      <div class="stat">Cash : <span id="cash">0</span></div>
-      <div class="stat">Patrimoine : <span id="patrimoine">0</span></div>
+      <div class="stat">Cash : <span id="cash">0</span> MAD</div>
+      <div class="stat">Patrimoine : <span id="patrimoine">0</span> MAD</div>
       <div class="stat">Rendement : <span id="yield">0%</span></div>
       <div class="stat">ESG : <span id="esg">0</span></div>
       <div class="stat">Risque : <span id="risk">-</span></div>
+      <div class="stat">Revenus mensuels : <span id="monthlyIncome">0</span> MAD</div>
+      <div class="progress-container">
+        <label>Objectif ESG</label>
+        <progress id="esgProgress" max="100" value="0"></progress>
+      </div>
+      <div class="progress-container">
+        <label>Rendement cible</label>
+        <progress id="yieldProgress" max="20" value="0"></progress>
+      </div>
       <button id="nextMonthBtn">▶️ Passer au mois suivant</button>
     </div>
 
-    <!-- Actions rapides -->
-    <div class="panel">
-      <h3>Actions rapides</h3>
-      <label>Budget initial (MAD): <input id="startCash" type="number" value="20000000"></label>
+    <!-- Paramètres de jeu avancés -->
+    <div class="panel game-settings">
+      <h3>⚙️ Paramètres de la Partie</h3>
+      <label>Budget initial (MAD): <input id="startCash" type="number" value="100000000"></label>
       <label>Objectif ESG: <input id="targetESG" type="number" value="70"></label>
-      <label>Rendement min (%) : <input id="targetYield" type="number" value="6"></label>
+      <label>Rendement min (%) : <input id="targetYield" type="number" value="8"></label>
+      <label>Nombre d’immeubles : <input id="numProperties" type="number" value="25"></label>
       <button id="applySettings">Appliquer paramètres</button>
     </div>
 
     <!-- Événements -->
     <div class="panel" id="eventsLog">
-      <h3>Événements</h3>
+      <h3>📢 Événements du mois</h3>
       <div id="eventList">Aucun événement pour le moment.</div>
     </div>
 
-    <!-- Liste immeubles -->
+    <!-- Liste immeubles filtrable -->
     <div class="panel" id="propertyListPanel">
-      <h3>Immeubles (filtre)</h3>
+      <h3>🏘️ Immeubles disponibles</h3>
       <select id="filterType">
         <option value="all">Tous</option>
         <option value="Résidentiel">Résidentiel</option>
         <option value="Bureaux">Bureaux</option>
+        <option value="Commerce">Commerce</option>
+        <option value="Luxe">Luxe</option>
       </select>
       <div id="propList"></div>
     </div>
+
+    <!-- Actions sur immeuble sélectionné -->
+    <div class="panel actions">
+      <h3>🔧 Actions sur l'immeuble sélectionné</h3>
+      <button id="buyBtn">Acheter</button>
+      <button id="sellBtn">Vendre</button>
+      <button id="renovBtn">Rénovation ESG</button>
+      <button id="upgradeBtn">Amélioration Luxe</button>
+      <button id="mortgageBtn">Contracter un emprunt</button>
+    </div>
+
   </aside>
 </main>
 
-<!-- Modal propriété -->
+<!-- Modal immeuble -->
 <div id="propModal" class="modal hidden">
   <div class="modal-content">
     <button class="close">✖</button>
     <div id="propDetails"></div>
     <div class="modal-actions">
-      <button id="buyBtn">Acheter</button>
-      <button id="sellBtn">Vendre</button>
-      <button id="renovBtn">Rénov (ESG)</button>
+      <button id="modalBuyBtn">Acheter</button>
+      <button id="modalSellBtn">Vendre</button>
+      <button id="modalRenovBtn">Rénov (ESG)</button>
+      <button id="modalUpgradeBtn">Amélioration luxe</button>
+      <button id="modalInfoBtn">💡 Recommandations</button>
     </div>
   </div>
 </div>
 
 <footer>
-  <small>Prototype — Jeu Immo Casablanca — Sauvegarde locale</small>
+  <small>© 2025 Jeu Immobilier Casablanca — Master Edition</small>
 </footer>
 
-<!-- Scripts -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
-
-
