@@ -1,193 +1,153 @@
-// ==== INIT ====
+// --- Variables globales ---
+let properties = [];
 let month = 0;
 let cash = 20000000;
-let properties = [];
-let eventsLog = [];
 let targetESG = 70;
 let targetYield = 6;
 
-// Charger sauvegarde si elle existe
-if (localStorage.getItem("gameData")) {
-  const data = JSON.parse(localStorage.getItem("gameData"));
-  month = data.month;
-  cash = data.cash;
-  properties = data.properties;
-  eventsLog = data.eventsLog;
-  targetESG = data.targetESG;
-  targetYield = data.targetYield;
-}
+const propertyTypes = ["Résidentiel", "Bureaux"];
+const events = [
+  {name:"COVID", cashImpact:-0.1, esgImpact:-5},
+  {name:"Hausse taux", cashImpact:-0.05, esgImpact:0},
+  {name:"Réforme verte", cashImpact:0, esgImpact:+10}
+];
 
-// ==== MAP ====
+// --- Initialisation Leaflet ---
 const map = L.map('map').setView([33.5731, -7.5898], 13); // Casablanca
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap'
+  attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// ==== GENERATION DES IMMEUBLES ====
-function generateProperties() {
-  if (properties.length > 0) return; // Déjà généré
+// --- Génération des immeubles ---
+function generateProperties(n=20) {
+  for(let i=0;i<n;i++){
+    let type = propertyTypes[Math.floor(Math.random()*propertyTypes.length)];
+    let price = Math.floor(Math.random()*(5000000-1000000)+1000000);
+    let rent = Math.floor(price*0.005);
+    let esg = Math.floor(Math.random()*100);
+    let lat = 33.55 + Math.random()*0.05;
+    let lng = -7.65 + Math.random()*0.05;
 
-  const types = ["Résidentiel", "Bureaux"];
-  for (let i = 0; i < 20; i++) {
-    let type = types[Math.floor(Math.random() * types.length)];
-    let price = Math.floor(Math.random() * 10000000) + 5000000;
-    let rent = Math.floor(price * (0.04 + Math.random() * 0.04)); // 4-8%
-    let esg = Math.floor(Math.random() * 100);
-    let lat = 33.55 + Math.random() * 0.05;
-    let lng = -7.63 + Math.random() * 0.08;
-
-    let prop = {
-      id: i,
-      type,
-      price,
-      rent,
-      esg,
-      owner: false,
-      lat,
-      lng
-    };
+    let prop = {id:i,type,price,rent,esg,lat,lng,owner:false,marker:null};
+    prop.marker = L.marker([lat,lng]).addTo(map)
+      .bindPopup(`${type}<br>Prix: ${price} MAD<br>Loyer: ${rent} MAD<br>ESG: ${esg}`)
+      .on('click',()=>openModal(prop));
     properties.push(prop);
   }
 }
-generateProperties();
 
-// ==== AFFICHAGE DES IMMEUBLES SUR LA CARTE ====
-function renderProperties() {
-  map.eachLayer((layer) => {
-    if (layer.options && layer.options.pane === 'markerPane') map.removeLayer(layer);
-  });
+// --- Modal ---
+const modal = document.getElementById('propModal');
+const propDetails = document.getElementById('propDetails');
+let selectedProp = null;
 
-  properties.forEach(prop => {
-    let color = prop.owner ? "green" : "blue";
-    const marker = L.circleMarker([prop.lat, prop.lng], { color }).addTo(map);
-    marker.on('click', () => openPropertyModal(prop));
-  });
-}
-
-// ==== TABLEAU DE BORD ====
-function updateDashboard() {
-  let patrimoine = properties.filter(p => p.owner).reduce((acc, p) => acc + p.price, 0);
-  let totalRent = properties.filter(p => p.owner).reduce((acc, p) => acc + p.rent, 0);
-  let avgYield = patrimoine ? (totalRent / patrimoine * 100).toFixed(2) : 0;
-  let avgESG = properties.filter(p => p.owner).length ?
-    Math.floor(properties.filter(p => p.owner).reduce((acc, p) => acc + p.esg, 0) / properties.filter(p => p.owner).length)
-    : 0;
-  let risk = avgESG >= targetESG && avgYield >= targetYield ? "Faible" : "Élevé";
-
-  document.getElementById("month").innerText = month;
-  document.getElementById("cash").innerText = cash.toLocaleString();
-  document.getElementById("patrimoine").innerText = patrimoine.toLocaleString();
-  document.getElementById("yield").innerText = avgYield + "%";
-  document.getElementById("esg").innerText = avgESG;
-  document.getElementById("risk").innerText = risk;
-}
-
-// ==== MODAL IMMEUBLE ====
-let currentProp = null;
-function openPropertyModal(prop) {
-  currentProp = prop;
-  const modal = document.getElementById("propModal");
-  const details = document.getElementById("propDetails");
-  details.innerHTML = `
-    <p>Type : ${prop.type}</p>
-    <p>Prix : ${prop.price.toLocaleString()} MAD</p>
-    <p>Loyer : ${prop.rent.toLocaleString()} MAD</p>
-    <p>ESG : ${prop.esg}</p>
-    <p>Propriétaire : ${prop.owner ? "Vous" : "Libre"}</p>
+function openModal(prop){
+  selectedProp = prop;
+  propDetails.innerHTML = `
+    <strong>${prop.type}</strong><br>
+    Prix: ${prop.price} MAD<br>
+    Loyer: ${prop.rent} MAD/mois<br>
+    ESG: ${prop.esg}<br>
+    Propriétaire: ${prop.owner?'Oui':'Non'}
   `;
-  modal.classList.remove("hidden");
+  modal.classList.remove('hidden');
 }
 
-document.querySelector(".close").addEventListener("click", () => {
-  document.getElementById("propModal").classList.add("hidden");
+document.querySelector('.close').addEventListener('click',()=>{modal.classList.add('hidden');});
+
+// --- Actions ---
+document.getElementById('buyBtn').addEventListener('click',()=>{
+  if(selectedProp && !selectedProp.owner && cash>=selectedProp.price){
+    cash -= selectedProp.price;
+    selectedProp.owner = true;
+    updateDashboard();
+    modal.classList.add('hidden');
+  } else alert("Pas assez de cash ou déjà acheté !");
 });
 
-// ==== ACTIONS ====
-document.getElementById("buyBtn").addEventListener("click", () => {
-  if (!currentProp.owner && cash >= currentProp.price) {
-    cash -= currentProp.price;
-    currentProp.owner = true;
-    renderProperties();
+document.getElementById('sellBtn').addEventListener('click',()=>{
+  if(selectedProp && selectedProp.owner){
+    cash += selectedProp.price;
+    selectedProp.owner = false;
     updateDashboard();
-    saveGame();
-  } else {
-    alert("Pas assez de cash ou déjà possédé !");
+    modal.classList.add('hidden');
   }
 });
 
-document.getElementById("sellBtn").addEventListener("click", () => {
-  if (currentProp.owner) {
-    cash += currentProp.price;
-    currentProp.owner = false;
-    renderProperties();
+document.getElementById('renovBtn').addEventListener('click',()=>{
+  if(selectedProp && selectedProp.owner){
+    selectedProp.esg += 5;
     updateDashboard();
-    saveGame();
-  } else {
-    alert("Vous ne possédez pas cet immeuble !");
+    modal.classList.add('hidden');
   }
 });
 
-document.getElementById("renovBtn").addEventListener("click", () => {
-  if (currentProp.owner) {
-    currentProp.esg = Math.min(100, currentProp.esg + 10);
-    updateDashboard();
-    saveGame();
-  } else {
-    alert("Vous devez posséder cet immeuble pour le rénover !");
-  }
-});
+// --- Tableau de bord ---
+function updateDashboard(){
+  const owned = properties.filter(p=>p.owner);
+  const patrimoine = owned.reduce((acc,p)=>acc+p.price,0);
+  const totalRent = owned.reduce((acc,p)=>acc+p.rent,0);
+  const avgYield = owned.length>0?Math.round(totalRent/patrimoine*100):0;
+  const avgESG = owned.length>0?Math.round(owned.reduce((acc,p)=>acc+p.esg,0)/owned.length):0;
+  const risk = avgYield<targetYield?'⚠️':'✔️';
 
-// ==== MOIS SUIVANT ET EVENEMENTS ====
-document.getElementById("nextMonthBtn").addEventListener("click", () => {
+  document.getElementById('month').innerText = month;
+  document.getElementById('cash').innerText = cash;
+  document.getElementById('patrimoine').innerText = patrimoine;
+  document.getElementById('yield').innerText = avgYield+'%';
+  document.getElementById('esg').innerText = avgESG;
+  document.getElementById('risk').innerText = risk;
+
+  // Sauvegarde locale
+  localStorage.setItem('gameState',JSON.stringify({month,cash,properties}));
+}
+
+// --- Mois suivant ---
+document.getElementById('nextMonthBtn').addEventListener('click',()=>{
   month++;
-  triggerRandomEvent();
+  // Collecte des loyers
+  properties.filter(p=>p.owner).forEach(p=>cash+=p.rent);
+  // Événement aléatoire
+  if(Math.random()<0.3){
+    let e = events[Math.floor(Math.random()*events.length)];
+    cash += cash*e.cashImpact;
+    properties.filter(p=>p.owner).forEach(p=>p.esg+=e.esgImpact);
+    document.getElementById('eventList').innerHTML = `Événement: ${e.name}`;
+  } else document.getElementById('eventList').innerHTML = 'Aucun événement';
   updateDashboard();
-  saveGame();
 });
 
-function triggerRandomEvent() {
-  const events = [
-    { name: "COVID", effect: () => properties.forEach(p => p.rent *= 0.9) },
-    { name: "Hausse des taux", effect: () => properties.forEach(p => p.price *= 0.95) },
-    { name: "Réforme verte", effect: () => properties.forEach(p => p.esg = Math.min(100, p.esg + 5)) },
-    { name: "Boom immobilier", effect: () => properties.forEach(p => p.price *= 1.05) }
-  ];
-  if (Math.random() < 0.5) { // 50% chance d'événement
-    const ev = events[Math.floor(Math.random() * events.length)];
-    ev.effect();
-    eventsLog.push(`Mois ${month}: ${ev.name}`);
-    document.getElementById("eventList").innerHTML = eventsLog.join("<br>");
-  }
-}
+// --- Paramètres ---
+document.getElementById('applySettings').addEventListener('click',()=>{
+  cash = parseInt(document.getElementById('startCash').value);
+  targetESG = parseInt(document.getElementById('targetESG').value);
+  targetYield = parseInt(document.getElementById('targetYield').value);
+  updateDashboard();
+});
 
-// ==== FILTRE PROPRIETES ====
-document.getElementById("filterType").addEventListener("change", (e) => {
-  const type = e.target.value;
-  const list = document.getElementById("propList");
-  list.innerHTML = "";
-  properties
-    .filter(p => type === "all" || p.type === type)
-    .forEach(p => {
-      const div = document.createElement("div");
-      div.innerHTML = `${p.type} - ${p.price.toLocaleString()} MAD <button onclick="openPropertyModal(properties[${p.id}])">✖</button>`;
-      list.appendChild(div);
+// --- Filtre immeubles ---
+document.getElementById('filterType').addEventListener('change',(e)=>{
+  const val = e.target.value;
+  properties.forEach(p=>{
+    if(val==='all' || p.type===val) p.marker.addTo(map);
+    else map.removeLayer(p.marker);
+  });
+});
+
+// --- Chargement ---
+function loadGame(){
+  const state = JSON.parse(localStorage.getItem('gameState'));
+  if(state){
+    month = state.month; cash = state.cash;
+    properties = state.properties;
+    properties.forEach(p=>{
+      p.marker = L.marker([p.lat,p.lng]).addTo(map)
+        .bindPopup(`${p.type}<br>Prix: ${p.price} MAD<br>Loyer: ${p.rent} MAD<br>ESG: ${p.esg}`)
+        .on('click',()=>openModal(p));
     });
-});
-
-// ==== PARAMETRES RAPIDES ====
-document.getElementById("applySettings").addEventListener("click", () => {
-  cash = parseInt(document.getElementById("startCash").value);
-  targetESG = parseInt(document.getElementById("targetESG").value);
-  targetYield = parseInt(document.getElementById("targetYield").value);
+  } else generateProperties();
   updateDashboard();
-  saveGame();
-});
-
-// ==== SAUVEGARDE ====
-function saveGame() {
-  localStorage.setItem("gameData", JSON.stringify({ month, cash, properties, eventsLog, targetESG, targetYield }));
 }
 
-// ==== INITIALISATION ====
-renderProperties();
-updateDashboard();
+loadGame();
+
