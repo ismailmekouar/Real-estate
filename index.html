@@ -5,18 +5,57 @@
   <title>Jeu Immobilier Casablanca</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
 <main>
+  <!-- Carte Leaflet -->
   <section id="map"></section>
 
+  <!-- Sidebar -->
   <aside id="sidebar">
-    <!-- panneaux tableau de bord, actions rapides, événements, immeubles -->
+    <!-- Tableau de bord -->
+    <div class="panel">
+      <h2>Tableau de bord</h2>
+      <div class="stat">Mois : <span id="month">0</span></div>
+      <div class="stat">Cash : <span id="cash">0</span></div>
+      <div class="stat">Patrimoine : <span id="patrimoine">0</span></div>
+      <div class="stat">Rendement : <span id="yield">0%</span></div>
+      <div class="stat">ESG : <span id="esg">0</span></div>
+      <div class="stat">Risque : <span id="risk">-</span></div>
+      <button id="nextMonthBtn">▶️ Passer au mois suivant</button>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="panel">
+      <h3>Actions rapides</h3>
+      <label>Budget initial (MAD): <input id="startCash" type="number" value="20000000"></label>
+      <label>Objectif ESG: <input id="targetESG" type="number" value="70"></label>
+      <label>Rendement min (%) : <input id="targetYield" type="number" value="6"></label>
+      <button id="applySettings">Appliquer paramètres</button>
+    </div>
+
+    <!-- Événements -->
+    <div class="panel" id="eventsLog">
+      <h3>Événements</h3>
+      <div id="eventList">Aucun événement pour le moment.</div>
+    </div>
+
+    <!-- Liste immeubles -->
+    <div class="panel" id="propertyListPanel">
+      <h3>Immeubles (filtre)</h3>
+      <select id="filterType">
+        <option value="all">Tous</option>
+        <option value="Résidentiel">Résidentiel</option>
+        <option value="Bureaux">Bureaux</option>
+      </select>
+      <div id="propList"></div>
+    </div>
   </aside>
 </main>
 
-<!-- Modal property -->
+<!-- Modal propriété -->
 <div id="propModal" class="modal hidden">
   <div class="modal-content">
     <button class="close">✖</button>
@@ -33,8 +72,10 @@
   <small>Prototype — Jeu Immo Casablanca — Sauvegarde locale</small>
 </footer>
 
+<!-- Scripts -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
+
 
