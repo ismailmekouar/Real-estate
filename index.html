@@ -1,0 +1,68 @@
+<!doctype html>
+
+
+<main>
+<section id="map"></section>
+
+
+<aside id="sidebar">
+<div class="panel">
+<h2>Tableau de bord</h2>
+<div class="stat">Mois : <span id="month">0</span></div>
+<div class="stat">Cash : <span id="cash">0</span></div>
+<div class="stat">Patrimoine : <span id="patrimoine">0</span></div>
+<div class="stat">Rendement : <span id="yield">0%</span></div>
+<div class="stat">ESG : <span id="esg">0</span></div>
+<div class="stat">Risque : <span id="risk">-</span></div>
+<button id="nextMonthBtn">▶️ Passer au mois suivant</button>
+</div>
+
+
+<div class="panel">
+<h3>Actions rapides</h3>
+<label>Budget initial (MAD): <input id="startCash" type="number" value="20000000"></label>
+<label>Objectif ESG: <input id="targetESG" type="number" value="70"></label>
+<label>Rendement min (%) : <input id="targetYield" type="number" value="6"></label>
+<button id="applySettings">Appliquer paramètres</button>
+</div>
+
+
+<div class="panel" id="eventsLog">
+<h3>Événements</h3>
+<div id="eventList">Aucun événement pour le moment.</div>
+</div>
+
+
+<div class="panel" id="propertyListPanel">
+<h3>Immeubles (filtre)</h3>
+<select id="filterType"><option value="all">Tous</option><option value="Résidentiel">Résidentiel</option><option value="Bureaux">Bureaux</option></select>
+<div id="propList"></div>
+</div>
+</aside>
+</main>
+
+
+<!-- Modal property -->
+<div id="propModal" class="modal hidden">
+<div class="modal-content">
+<button class="close">✖</button>
+<div id="propDetails"></div>
+<div class="modal-actions">
+<button id="buyBtn">Acheter</button>
+<button id="sellBtn">Vendre</button>
+<button id="renovBtn">Rénov (ESG)</button>
+</div>
+</div>
+</div>
+
+
+<footer>
+<small>Prototype — Jeu Immo Casablanca — Sauvegarde locale</small>
+</footer>
+</div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
